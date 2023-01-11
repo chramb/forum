@@ -1,0 +1,19 @@
+{
+  "title": "Some title",
+  "creator_username": "someusername",
+  "tags": ["tag_1", "tag_2"],
+  "comments": [
+    {
+      "comment_id": 1,
+      "comment_creator": "@Some_dude",
+      "content": "Blah Blah Blah",
+      "Score": 10
+    },
+    {
+      "comment_id": 2,
+      "comment_creator": "@Some_other_dude",
+      "content": "Blah Blah Blah even more blah",
+      "Score": -5
+    }
+  ]
+}

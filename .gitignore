@@ -1,0 +1,13 @@
+# Python
+__pycache__/
+venv/
+
+# Postgres
+pgdata/
+
+# Possible config files
+.env
+config.ini
+
+# IDE
+.idea/
