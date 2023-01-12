@@ -8,17 +8,21 @@
 
 ## `/api/v0/`
 - `/`
-  - [ ] `/@<username>` - get - preview
+  - [X] `/@<username>` - get - preview
     - [ ] `/@<username>/ban` - delete - moderator+
     - [ ] `/@<username>/remove` - delete - admin+
     - [ ] `/@<username>/search` -> `/search` `WHERE username = ?{query}`
-  - [ ] `/#<tag>` - get - preview
-    - [ ] `/#<tag>/search`
-    - [ ] `/#<tag>/remove` - delete - admin
+  - [ ] `/tag/<tag>` - get - preview
+    - [ ] `/tag/<tag>/search`
+    - [ ] `/tag/<tag>/remove` - delete - admin
+  - [ ] `/role/<role>` - get - preview
+    - [ ] `/role/<role>/search`
+    - [ ] `/role/<role>/remove` - delete - admin
   - `/auth`
-  - [X] `/auth/register` - post
+  - [ ] `/auth/register` - post
   - [ ] `/auth/login` - post
   - [ ] `/auth/logout` - post
+  - [ ] `/auth/status` - get
 - `/post/`
   - post - create: submit -> redirect to `/post/<id>`
   - `/post/<id>`

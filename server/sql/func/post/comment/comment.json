@@ -1,0 +1,12 @@
+{
+  "id": 10,
+  "message": "Hello!",
+  "author": {
+    "uid": "f280aa75-f1ca-46ee-96fb-409aa9e65670",
+    "username": "u1"
+  },
+  "creation_time": "2023-01-11 20:45:01",
+  "edited": false,
+  "score": 0,
+  "responses": []
+}

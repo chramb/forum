@@ -17,9 +17,9 @@ class Database:
             print("Connecting to the Database...")
             conn = psycopg2.connect(**params)
             curr = conn.cursor()
-            print("Database Version:")
+            print("Database Version: ", end="")
             curr.execute("SELECT version()")
-            print(curr.fetchone())
+            print(curr.fetchone()[0].split(',')[0])
             curr.close()
         except psycopg2.OperationalError as err:
             print(err)
