@@ -1,6 +1,6 @@
 from fastapi import APIRouter
 
-from ..account import account_get_by_username
+from routes.root.account import account_get_by_username
 
 base_router = APIRouter()
 

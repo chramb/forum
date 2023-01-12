@@ -109,3 +109,23 @@ select comment_get_recursive_json_v2(1);
 
 select *
 from comment;
+/*
+# Dokumentacja:
+
+- Co to za projekt
+- O czym
+
+- Przypadki użycia
+- Najciekawsze zapytania
+- Sposób uruchomienia
+
+
+# Prezentacja:
+- Co zrobiliśmy
+- Jaka architektura
+- Prezentacja
+
+# 2 rzeczy:
+- Co się udało, nie udało
+- Czego się nauczyliśmy
+*/
