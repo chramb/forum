@@ -1,6 +1,11 @@
 fastapi
 uvicorn[standard]
-jinja2
-python-multipart
+
+jinja2 			# templates
+python-multipart 	# for handling forms and security
+
+passlib[bcrypt] 	# password hashing
+PyJWT 			# JWT (en|de)coding
+
 
 psycopg2-binary
