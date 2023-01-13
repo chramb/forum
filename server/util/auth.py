@@ -10,6 +10,7 @@ class AuthHandler:
     security = HTTPBearer()
     pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
     secret = 'SECRET'
+    # TODO: move those to config.ini
 
     def password_hash(self, password):
         return self.pwd_context.hash(password)

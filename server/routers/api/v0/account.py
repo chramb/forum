@@ -1,12 +1,14 @@
 import re
 
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, Depends, HTTPException
 from psycopg2.extras import RealDictCursor
 
 from models.account import AccountRegister, AccountLogin
+from util.auth import AuthHandler
 from util.database import connection
 
 router = APIRouter()
+auth_handler = AuthHandler()
 
 
 @router.get("/api/v0/account/@{username}", tags=['API'])
@@ -42,6 +44,7 @@ async def account_get_by_username(username: str):
 
 @router.get("/api/v0/account/{uid}", tags=['API'])
 async def account_get_by_uid(uid: str):
+    # TODO: switch to with connection syntax
     curr = connection.cursor(cursor_factory=RealDictCursor)
     curr.execute("""
     select a.username, a.email, a.uid,
@@ -71,14 +74,14 @@ async def account_get_by_uid(uid: str):
         )
 
 
-@router.post("/api/v0/account/register", tags=['TODO'])
+@router.post("/api/v0/account/register", tags=['API'])
 async def account_register_post(user: AccountRegister):
-    return user
-
-
-@router.post("/api/v0/account/login", tags=['TODO'])
-async def account_login_post(user: AccountLogin):
-    return AccountLogin
+    errors = account_register(user.username, user.email, user.password)
+    if not errors:
+        return {"detail": "user created"}
+    else:
+        raise HTTPException(status_code=400, detail=errors)
+    # TODO: return the new user json in the future
 
 
 def account_register(username: str, email: str, password: str):
@@ -98,13 +101,13 @@ def account_register(username: str, email: str, password: str):
     with connection.cursor() as curr:
         # Get all users with the same username or email
         curr.execute("""
-            select a.username, a.email from account a
+            select a.username, a.email,a.password from account a
             where a.username = %s or a.email = %s;
-        """, (username, email))
+        """, (username, email))  # TODO: improve query to just return bool
         response = curr.fetchall()
         if len(response) > 0:
             errors.append("User this username and/or email already exists.")
-            return errors
+            return response
 
         # Create user
         curr.execute("""
@@ -112,6 +115,31 @@ def account_register(username: str, email: str, password: str):
                 username := %s, 
                 password := %s, 
                 email := %s);
-        """, (username, password, email))
-        # catch error: account with this username or email already exists
-    return None
+        """, (username, auth_handler.password_hash(password), email))
+        connection.commit()
+    print(f"user {username}, should be in DB")
+    return
+
+
+@router.post("/api/v0/account/login", tags=['TODO'])
+async def account_login_post(account: AccountLogin):
+    # TODO:
+    # 1. check if user with that username exists and get his password
+    # 2. check if password matches
+    # 3. return token
+    with connection.cursor(cursor_factory=RealDictCursor) as curr:
+        curr.execute("""
+            select a.uid, a.password from account a
+             where a.username = %s;
+        """, (account.username,))
+        db_account = curr.fetchall()[0];
+        valid = auth_handler.password_verify(account.password, db_account['password'])
+        # TODO: write a function that will check if size is 1 because if not DB error or sth
+        print(valid)
+        if valid:
+            return {"logged_in": valid}
+        # TODO: Fix this and implement in user (register cookie)
+
+@router.get("/api/v0/account/status", tags=['TODO'])
+async def test_auth():
+    return {"logged in as": "..."}
