@@ -1,17 +1,18 @@
 #!/usr/bin/env python3
 
 import uvicorn
-from fastapi import FastAPI
-from fastapi.security import HTTPBasic
 
-from routes.root.account import account_router
-from routes.root.base import base_router
+from fastapi import FastAPI
+
+from routers.api.v0 import account
+from routers.website import index
+from routers.website import register
 
 app = FastAPI()
-security = HTTPBasic()
 
-app.include_router(base_router)
-app.include_router(account_router)
+app.include_router(account.router)
+app.include_router(index.router)
+app.include_router(register.router)
 
 if __name__ == "__main__":
     uvicorn.run(app)

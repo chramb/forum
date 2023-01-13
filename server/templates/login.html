@@ -1,0 +1,32 @@
+{%  extends "base.html" %}
+
+{% block title %}
+  <title> Forum | Login </title>
+{% endblock %}
+
+{% block body %}
+  <div class=" container">
+    <div class="card mt-5">
+      <form novalidate id="login-form">
+        <div class="card-header text-bg-dark">
+          <h5 class="card-title" id="signInTitleLabel">Sign in</h5>
+        </div>
+        <div class="card-body">
+          <div class="form-floating mb-2">
+            <input type="email" id="login-email" class="form-control" placeholder="email" required>
+            <div class="invalid-feedback">Email is required.</div>
+            <label for="login-email" class="form-label">Email</label>
+          </div>
+          <div class="form-floating">
+            <input type="password" id="login-password" class="form-control" placeholder="password" required>
+            <div class="invalid-feedback">Password is required.</div>
+            <label for="login-password" class="form-label">Password</label>
+          </div>
+        </div>
+        <div class="card-footer">
+          <button type="submit" class="btn btn-primary">Submit</button>
+        </div>
+      </form>
+    </div>
+  </div>
+{% endblock %}

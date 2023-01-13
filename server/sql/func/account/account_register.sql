@@ -56,7 +56,7 @@ as $$
             account_register.email);
 
     -- perform because return is void so we don't care about result
-    perform assign_account_role(acc_uid,role_get_id_from_title('user'));
+    call assign_account_role(acc_uid,role_get_id_from_title('user'));
 
 end $$;
 
@@ -64,9 +64,10 @@ end $$;
 call account_register( 'u1','pass','u1@example.com');
 call account_register('u2','pass','u2@example.com');
 call account_register( 'u3','secret', 'u3@example.com');
+call account_register( 'u4','secret', 'u4@example.com');
+call account_register( 'u5','secret', 'u5@example.com');
 call assign_account_role_by_name('u1','admin');
 call assign_account_role_by_name('u2','moderator');
-
 
 -- tests
 /*

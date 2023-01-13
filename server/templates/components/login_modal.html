@@ -1,0 +1,38 @@
+<!-- Modal -->
+<div class="modal fade" id="signInModal" tabindex="-1" aria-labelledby="signInModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <form novalidate id="login-form">
+        <div class="modal-header text-bg-dark">
+          <h5 class="modal-title" id="signInModalLabel">Sign in</h5>
+        </div>
+        <div class="modal-body">
+          <div class="form-floating mb-2">
+            <input type="email" id="login-email" class="form-control" placeholder="email" required>
+            <div class="invalid-feedback">Email is required.</div>
+            <label for="login-email" class="form-label">Email</label>
+          </div>
+          <div class="form-floating">
+            <input type="password" id="login-password" class="form-control" placeholder="password" required>
+            <div class="invalid-feedback">Password is required.</div>
+            <label for="login-password" class="form-label">Password</label>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+          <button type="submit" class="btn btn-primary">Submit</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+<script>
+    const login_form = document.getElementById("login-form")
+    login_form.addEventListener('submit', ev => {
+        if (!login_form.checkValidity()) {
+            ev.preventDefault()
+        }
+
+        login_form.classList.add('was-validated')
+    })
+</script>

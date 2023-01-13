@@ -1,0 +1,59 @@
+{%  extends "base.html" %}
+
+{% block title %}
+  <title> Forum | Register </title>
+{% endblock %}
+
+{% block body %}
+    <div class="container">
+      <div class="card mt-3">
+        <form novalidate id="register-form" method="POST">
+          <div class="card-header text-bg-dark">
+            <h5 class="card-title" id="signUpCard">Sign up</h5>
+          </div>
+          <div class="card-body">
+            <div class="form-floating mb-2">
+              <input name="username" type="text" id="register-username" class="form-control" placeholder="username" required>
+              <label for="register-username" class="form-label">Username</label>
+              <div class="invalid-feedback">Username required.</div>
+            </div>
+            <div class="form-floating mb-2">
+              <input name="email" type="email" id="register-email" class="form-control" placeholder="email" required>
+              <label for="register-email" class="form-label">Email</label>
+              <div class="invalid-feedback">Email required.</div>
+            </div>
+            <div class="form-floating mb-2">
+              <input name="password" type="password" id="register-password" class="form-control" placeholder="password" required>
+              <label for="register-password" class="form-label">Password</label>
+              <div class="invalid-feedback">Password required.</div>
+            </div>
+            {% if errors is defined %}
+              <div class="alert alert-danger">
+                <strong>Couldn't create account:</strong>
+                <ul>
+                {% for e in errors %}
+                  <li>{{ e }}</li>
+                {% endfor %}
+                </ul>
+              </div>
+            {% endif %}
+          </div>
+          <div class="card-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="card">Close</button>
+            <button type="submit" class="btn btn-primary">Submit</button>
+          </div>
+        </form>
+      </div>
+    </div>
+{% endblock %}
+
+{% block script %}
+      const register_form = document.getElementById('register-form')
+      register_form.addEventListener('submit', ev => {
+
+          if (!register_form.checkValidity()) {
+              ev.preventDefault()
+          }
+          register_form.classList.add('was-validated')
+      })
+{% endblock %}
