@@ -27,7 +27,7 @@
               <label for="register-password" class="form-label">Password</label>
               <div class="invalid-feedback">Password required.</div>
             </div>
-            {% if errors is not none %}
+            {% if errors is defined and not none %}
               <div class="alert alert-danger">
                 <strong>Couldn't create account:</strong>
                 <ul>

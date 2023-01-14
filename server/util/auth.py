@@ -10,6 +10,7 @@ class AuthHandler:
     security = HTTPBearer()
     pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
     secret = 'SECRET'
+    jwt_algorithm = 'HS256'
     # TODO: move those to config.ini
 
     def password_hash(self, password):
@@ -20,14 +21,14 @@ class AuthHandler:
 
     def token_encode(self, user_uid):
         payload = {
-            'exp': datetime.utcnow() + timedelta(days=0, minutes=5),
+            'exp': datetime.utcnow() + timedelta(days=0, minutes=30),
             'iat': datetime.utcnow(),
             'sub': user_uid
         }
         return jwt.encode(
             payload,
             self.secret,
-            algorithm='HS256'
+            algorithm=self.jwt_algorithm
         )
 
     def token_decode(self, token):

@@ -7,21 +7,38 @@
 {% block body %}
   <div class=" container">
     <div class="card mt-5">
-      <form novalidate id="login-form">
+      <form novalidate id="login-form" method="POST">
         <div class="card-header text-bg-dark">
           <h5 class="card-title" id="signInTitleLabel">Sign in</h5>
         </div>
         <div class="card-body">
           <div class="form-floating mb-2">
-            <input type="email" id="login-email" class="form-control" placeholder="email" required>
-            <div class="invalid-feedback">Email is required.</div>
-            <label for="login-email" class="form-label">Email</label>
+            <input name="username" type="username" id="login-username" class="form-control" placeholder="username" required>
+            <div class="invalid-feedback">Username is required.</div>
+            <label for="login-username" class="form-label">Username</label>
           </div>
           <div class="form-floating">
-            <input type="password" id="login-password" class="form-control" placeholder="password" required>
+            <input name="password" type="password" id="login-password" class="form-control" placeholder="password" required>
             <div class="invalid-feedback">Password is required.</div>
             <label for="login-password" class="form-label">Password</label>
           </div>
+        </div>
+        <div class="container">
+        {% if errors is defined and not none %}
+          <div class="alert alert-danger">
+            <strong>Couldn't login to account:</strong>
+            <ul>
+              {% for e in errors %}
+                <li>{{ e }}</li>
+              {% endfor %}
+            </ul>
+          </div>
+        {% endif %}
+        {% if success is defined and not none %}
+          <div class="alert alert-success">
+            <strong>{{ success }}</strong>
+          </div>
+        {% endif %}
         </div>
         <div class="card-footer">
           <button type="submit" class="btn btn-primary">Submit</button>

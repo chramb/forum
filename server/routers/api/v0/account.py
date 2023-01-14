@@ -134,12 +134,13 @@ def account_login_post(account: AccountLogin):
         """, (account.username,))
         db_account = curr.fetchall()
         if not db_account or not auth_handler.password_verify(account.password, db_account[0]['password']):
-            raise HTTPException(status_code=401, detail="Invalid username and/or password")
+            raise HTTPException(status_code=401, detail="Invalid username and/or password.")
 
-        token = auth_handler.token_encode(db_account[0]['uid'])
-        return {"token": token}
+        jwt_token = auth_handler.token_encode(db_account[0]['uid'])
+        return {"token": jwt_token}
 
 
 @router.get("/protected", tags=['TODO'])
 def test_auth(uuid=Depends(auth_handler.auth_wrapper)):
     return {"uuid": uuid}
+
