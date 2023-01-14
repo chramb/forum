@@ -60,8 +60,8 @@ create table if not exists post -- phone
 create table if not exists comment
 (
     id            bigserial primary key,
-    creator_uid   uuid references account (uid),            -- TODO: null if user is deleted deletes (cascade do stuff)
-    post_id       int references post (id) not null,
+    creator_uid   uuid references account (uid) on delete set null,            -- TODO: null if user is deleted deletes (cascade do stuff)
+    post_id       int references post (id) on delete cascade not null,
     creation_date timestamp                      default now(),
     last_update   timestamp                      default null,
     response_for  bigint references comment (id) default null,

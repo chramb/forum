@@ -39,11 +39,10 @@ def web_get(request: Request, access_token: Optional[str] | None = Cookie(None))
                     user = db_user[0]
 
         except jwt.ExpiredSignatureError:
-            return RedirectResponse("/login", 303)
+            # return RedirectResponse("/login", 303)
             pass
         except jwt.InvalidTokenError:
             print("Invalid cookie")
             pass
 
-    # print("user logged in"), "username:" username
     return templates.TemplateResponse("index.html", {"request": request})

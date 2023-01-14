@@ -11,7 +11,7 @@ router = APIRouter()
 auth_handler = AuthHandler()
 
 
-@router.get("/api/v0/account/@{username}", tags=['API'])
+@router.get("/api/v0/account/@{username}", tags=['Account'])
 def account_get_by_username(username: str):
     curr = connection.cursor(cursor_factory=RealDictCursor)
     curr.execute("""
@@ -42,7 +42,7 @@ def account_get_by_username(username: str):
         )
 
 
-@router.get("/api/v0/account/{uid}", tags=['API'])
+@router.get("/api/v0/account/{uid}", tags=['Account'])
 def account_get_by_uid(uid: str):
     # TODO: switch to with connection syntax
     curr = connection.cursor(cursor_factory=RealDictCursor)
@@ -74,7 +74,7 @@ def account_get_by_uid(uid: str):
         )
 
 
-@router.post("/api/v0/account/register", tags=['API'])
+@router.post("/api/v0/account/register", tags=['Account'])
 def account_register_post(user: AccountRegister):
     errors = account_register(user.username, user.email, user.password)
     if not errors:
@@ -100,6 +100,7 @@ def account_register(username: str, email: str, password: str):
 
     with connection.cursor() as curr:
         # Get all users with the same username or email
+        # TODO put both in a procedure (exec multiple from psycopg2 )
         curr.execute("""
             select a.username, a.email,a.password from account a
             where a.username = %s or a.email = %s;
@@ -117,12 +118,11 @@ def account_register(username: str, email: str, password: str):
                 email := %s);
         """, (username, auth_handler.password_hash(password), email))
         connection.commit()
-    print(f"user {username}, should be in DB")
     return
 
 
-@router.post("/api/v0/account/login", tags=['TODO'])
-def account_login_post(account: AccountLogin):
+@router.post("/api/v0/account/login", tags=['Account'])
+def account_login(account: AccountLogin):
     # TODO:
     # 1. check if user with that username exists and get his password
     # 2. check if password matches
@@ -140,7 +140,47 @@ def account_login_post(account: AccountLogin):
         return {"token": jwt_token}
 
 
-@router.get("/protected", tags=['TODO'])
-def test_auth(uuid=Depends(auth_handler.auth_wrapper)):
-    return {"uuid": uuid}
+@router.put("/api/v0/account/{uid}", tags=['Account'])
+def account_update(uid: str, account: AccountRegister, account_uid=Depends(auth_handler.auth_wrapper)):
+    # TODO: validate password, email, external function pulled from register ^^
+    if account_uid == uid:
+        with connection.cursor(cursor_factory=RealDictCursor) as crsr:
+            crsr.execute("""
+            select a.uid, a.username, a.email
+            from account a 
+            where a.username = %s or a.email = %s;
+            """, (account.username, account.email))
+            existing_accounts = crsr.fetchall()
+            if len(existing_accounts) > 0:
+                for acc in existing_accounts:
+                    if acc['uid'] != uid:
+                        return HTTPException(status_code=409, detail="username or password already taken")
 
+            hashed_password = auth_handler.password_hash(account.password)
+            crsr.execute("""
+            update account
+                set 
+                 email = %s,
+                 username = %s,
+                 password = %s
+                where uid = %s;
+            """, (account.email, account.username, hashed_password, account_uid))
+            connection.commit()
+
+            return {"detail": "account updated successfully"}
+
+    return HTTPException(status_code=401, detail="account uid doesn't mach authenticated user")
+
+
+@router.delete("/api/v0/account/{uid}", tags=['Account'])
+def account_delete(uid: str, account=Depends(auth_handler.auth_wrapper)):
+    if account == uid:
+        # TODO: allow role moderator+ to remove users
+        with connection.cursor() as crsr:
+            crsr.execute("""
+            delete from account a where a.uid = %s
+            """, (uid,))
+            connection.commit()
+        return {"detail": "account removed successfully"}
+    else:
+        return HTTPException(status_code=401, detail="account uid doesn't mach authenticated user")
