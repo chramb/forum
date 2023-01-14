@@ -12,7 +12,7 @@ templates = Jinja2Templates(directory="templates")
 
 
 @router.get("/register", response_class=HTMLResponse, tags=['website'])
-async def web_register_get(request: Request):
+def web_register_get(request: Request):
     return templates.TemplateResponse("register.html", {"request": request})
 
 

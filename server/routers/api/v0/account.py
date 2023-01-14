@@ -12,7 +12,7 @@ auth_handler = AuthHandler()
 
 
 @router.get("/api/v0/account/@{username}", tags=['API'])
-async def account_get_by_username(username: str):
+def account_get_by_username(username: str):
     curr = connection.cursor(cursor_factory=RealDictCursor)
     curr.execute("""
     select a.username, a.email, a.uid,
@@ -43,7 +43,7 @@ async def account_get_by_username(username: str):
 
 
 @router.get("/api/v0/account/{uid}", tags=['API'])
-async def account_get_by_uid(uid: str):
+def account_get_by_uid(uid: str):
     # TODO: switch to with connection syntax
     curr = connection.cursor(cursor_factory=RealDictCursor)
     curr.execute("""
@@ -75,7 +75,7 @@ async def account_get_by_uid(uid: str):
 
 
 @router.post("/api/v0/account/register", tags=['API'])
-async def account_register_post(user: AccountRegister):
+def account_register_post(user: AccountRegister):
     errors = account_register(user.username, user.email, user.password)
     if not errors:
         return {"detail": "user created"}
@@ -122,7 +122,7 @@ def account_register(username: str, email: str, password: str):
 
 
 @router.post("/api/v0/account/login", tags=['TODO'])
-async def account_login_post(account: AccountLogin):
+def account_login_post(account: AccountLogin):
     # TODO:
     # 1. check if user with that username exists and get his password
     # 2. check if password matches
@@ -141,5 +141,5 @@ async def account_login_post(account: AccountLogin):
         # TODO: Fix this and implement in user (register cookie)
 
 @router.get("/api/v0/account/status", tags=['TODO'])
-async def test_auth():
+def test_auth():
     return {"logged in as": "..."}

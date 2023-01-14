@@ -7,9 +7,9 @@ templates = Jinja2Templates(directory="templates")
 
 
 @router.get("/", response_class=HTMLResponse, tags=['Website'])
-async def web_get(request: Request):
+def web_get(request: Request):
     return templates.TemplateResponse("index.html",  {"request": request})
 
 @router.get("/login", response_class=HTMLResponse, tags=['Website'])
-async def web_get(request: Request):
+def web_get(request: Request):
     return templates.TemplateResponse("login.html",  {"request": request})
