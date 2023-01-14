@@ -88,7 +88,7 @@ begin
                    'message', c.msg,
                    'author', json_build_object(
                            'uid', c.creator_uid,
-                           'username', a.username),
+                           'username', (select a.username from account a where a.uid = c.creator_uid)),
                    'creation_time', date_trunc('seconds', c.creation_date),
                    'edited', c.last_update is not null,
                    'score', c.score,
@@ -98,7 +98,6 @@ begin
                                              -- order by r.score
                                          ), '[]'))
     from comment c
-    join account a on a.uid = c.creator_uid
     where c.id = comment_get_recursive_json_v2.id
     into output;
 

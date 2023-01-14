@@ -32,7 +32,7 @@ as $$begin
     -- Create Post
     insert into post (title, creator_uid, tag_id)
     values (title, user_uid, tag_get_id(create_post.tag));
-    -- First Comment (Post content)
+    -- First Comment (Post content) -- remove on phone impl
     insert into "comment" (msg, post_id, creator_uid)
     values ("content",
             (select post.id

@@ -1,6 +1,7 @@
 import re
 
 from fastapi import APIRouter, Depends, HTTPException
+from fastapi.security import OAuth2PasswordRequestForm, OAuth2PasswordBearer
 from psycopg2.extras import RealDictCursor
 
 from models.account import AccountRegister, AccountLogin
@@ -9,6 +10,7 @@ from util.database import connection
 
 router = APIRouter()
 auth_handler = AuthHandler()
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/v0/account/token")
 
 
 @router.get("/api/v0/account/@{username}", tags=['Account'])
@@ -74,7 +76,7 @@ def account_get_by_uid(uid: str):
         )
 
 
-@router.post("/api/v0/account/register", tags=['Account'])
+@router.post("/api/v0/account/register", status_code=201, tags=['Account'])
 def account_register_post(user: AccountRegister):
     errors = account_register(user.username, user.email, user.password)
     if not errors:
@@ -121,29 +123,29 @@ def account_register(username: str, email: str, password: str):
     return
 
 
-@router.post("/api/v0/account/login", tags=['Account'])
-def account_login(account: AccountLogin):
-    # TODO:
-    # 1. check if user with that username exists and get his password
-    # 2. check if password matches
-    # 3. return token
+@router.post("/api/v0/account/token", tags=['Account'])
+def account_oauth_login(form_data: OAuth2PasswordRequestForm = Depends()):
     with connection.cursor(cursor_factory=RealDictCursor) as curr:
         curr.execute("""
             select a.uid, a.password from account a
              where a.username = %s;
-        """, (account.username,))
+        """, (form_data.username,))
         db_account = curr.fetchall()
-        if not db_account or not auth_handler.password_verify(account.password, db_account[0]['password']):
+        if not db_account or not auth_handler.password_verify(form_data.password, db_account[0]['password']):
             raise HTTPException(status_code=401, detail="Invalid username and/or password.")
 
         jwt_token = auth_handler.token_encode(db_account[0]['uid'])
-        return {"token": jwt_token}
+        return {"access_token": jwt_token, "token_type": "bearer"}
 
 
-@router.put("/api/v0/account/{uid}", tags=['Account'])
-def account_update(uid: str, account: AccountRegister, account_uid=Depends(auth_handler.auth_wrapper)):
+@router.put("/api/v0/account/", tags=['Account'])
+def account_update(uid: str, account: AccountRegister, jwt=Depends(oauth2_scheme)):
+    """
+    Note: you can't create users with this request
+    """
     # TODO: validate password, email, external function pulled from register ^^
-    if account_uid == uid:
+    account_uid = auth_handler.token_decode(jwt)
+    if True:
         with connection.cursor(cursor_factory=RealDictCursor) as crsr:
             crsr.execute("""
             select a.uid, a.username, a.email
@@ -153,7 +155,7 @@ def account_update(uid: str, account: AccountRegister, account_uid=Depends(auth_
             existing_accounts = crsr.fetchall()
             if len(existing_accounts) > 0:
                 for acc in existing_accounts:
-                    if acc['uid'] != uid:
+                    if acc['uid'] != account_uid:
                         return HTTPException(status_code=409, detail="username or password already taken")
 
             hashed_password = auth_handler.password_hash(account.password)
@@ -173,8 +175,9 @@ def account_update(uid: str, account: AccountRegister, account_uid=Depends(auth_
 
 
 @router.delete("/api/v0/account/{uid}", tags=['Account'])
-def account_delete(uid: str, account=Depends(auth_handler.auth_wrapper)):
-    if account == uid:
+def account_delete(uid: str, jwt=Depends(oauth2_scheme)):
+    account_uid = auth_handler.token_decode(jwt)
+    if account_uid == uid:
         # TODO: allow role moderator+ to remove users
         with connection.cursor() as crsr:
             crsr.execute("""

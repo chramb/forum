@@ -1,16 +1,19 @@
 # credit: https://github.com/ianrufus/youtube/blob/main/fastapi-jwt-auth/src/auth.py
 import jwt
-from fastapi import HTTPException, Security
-from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
+from fastapi import HTTPException, Security, Depends
+from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer, OAuth2PasswordRequestForm, OAuth2PasswordBearer
 from passlib.context import CryptContext
 from datetime import datetime, timedelta
 
+# TODO: refactor to use this: https://stackoverflow.com/questions/64731890/fastapi-supporting-multiple-authentication-dependencies
 
 class AuthHandler:
     security = HTTPBearer()
     pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
     secret = 'SECRET'
     jwt_algorithm = 'HS256'
+
+
     # TODO: move those to config.ini
 
     def password_hash(self, password):
@@ -41,4 +44,7 @@ class AuthHandler:
             raise HTTPException(status_code=401, detail='Invalid token')
 
     def auth_wrapper(self, auth: HTTPAuthorizationCredentials = Security(security)):
+        """
+        :returns: account_uid
+        """
         return self.token_decode(auth.credentials)
