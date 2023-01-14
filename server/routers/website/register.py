@@ -11,7 +11,7 @@ router = APIRouter()
 templates = Jinja2Templates(directory="templates")
 
 
-@router.get("/register", response_class=HTMLResponse, tags=['website'])
+@router.get("/register", response_class=HTMLResponse, tags=['Website'])
 def web_register_get(request: Request):
     return templates.TemplateResponse("register.html", {"request": request})
 
@@ -20,6 +20,7 @@ def web_register_get(request: Request):
 def web_register_post(request: Request, username: str = Form(), email: str = Form(), password: str = Form()):
     errors = account_register(username, email, password)
     if not errors:
-        return {"msg": "account created successfully"}
+        success_msg = "account created successfully"
+        return templates.TemplateResponse("register.html", {"request": request, "errors": errors, "success": success_msg})
     else:
         return templates.TemplateResponse("register.html", {"request": request, "errors": errors})

@@ -27,7 +27,7 @@
               <label for="register-password" class="form-label">Password</label>
               <div class="invalid-feedback">Password required.</div>
             </div>
-            {% if errors is defined %}
+            {% if errors is not none %}
               <div class="alert alert-danger">
                 <strong>Couldn't create account:</strong>
                 <ul>
@@ -35,6 +35,11 @@
                   <li>{{ e }}</li>
                 {% endfor %}
                 </ul>
+              </div>
+            {% endif %}
+            {% if success is defined %}
+              <div class="alert alert-success">
+                <strong>{{ success }}</strong>
               </div>
             {% endif %}
           </div>

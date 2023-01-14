@@ -107,7 +107,7 @@ def account_register(username: str, email: str, password: str):
         response = curr.fetchall()
         if len(response) > 0:
             errors.append("User this username and/or email already exists.")
-            return response
+            return errors
 
         # Create user
         curr.execute("""
