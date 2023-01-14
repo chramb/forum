@@ -6,6 +6,8 @@ class AccountRegister(BaseModel):
     email: str
     password: str
 
+
+# AuthDetails
 class AccountLogin(BaseModel):
     username: str
     password: str

@@ -132,14 +132,14 @@ def account_login_post(account: AccountLogin):
             select a.uid, a.password from account a
              where a.username = %s;
         """, (account.username,))
-        db_account = curr.fetchall()[0];
-        valid = auth_handler.password_verify(account.password, db_account['password'])
-        # TODO: write a function that will check if size is 1 because if not DB error or sth
-        print(valid)
-        if valid:
-            return {"logged_in": valid}
-        # TODO: Fix this and implement in user (register cookie)
+        db_account = curr.fetchall()
+        if not db_account or not auth_handler.password_verify(account.password, db_account[0]['password']):
+            raise HTTPException(status_code=401, detail="Invalid username and/or password")
 
-@router.get("/api/v0/account/status", tags=['TODO'])
-def test_auth():
-    return {"logged in as": "..."}
+        token = auth_handler.token_encode(db_account[0]['uid'])
+        return {"token": token}
+
+
+@router.get("/protected", tags=['TODO'])
+def test_auth(uuid=Depends(auth_handler.auth_wrapper)):
+    return {"uuid": uuid}
