@@ -4,7 +4,7 @@ from subprocess import run
 
 from server.util.config import config
 
-cfg = config("server/config.ini")
+cfg = config("src/config.ini")
 
 cmd = f"""
 podman run -d \\

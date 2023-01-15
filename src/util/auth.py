@@ -5,12 +5,13 @@ from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer, OAuth2Pas
 from passlib.context import CryptContext
 from datetime import datetime, timedelta
 
-# TODO: refactor to use this: https://stackoverflow.com/questions/64731890/fastapi-supporting-multiple-authentication-dependencies
+from util.config import config
 
 class AuthHandler:
+    options = config(filename="config.ini", section="auth")
     security = HTTPBearer()
     pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
-    secret = 'SECRET'
+    secret = options['jwt_secret']
     jwt_algorithm = 'HS256'
 
 
