@@ -29,8 +29,8 @@ def web_login_post(request: Request, username: str = Form(), password: str = For
     if not db_account or not auth_handler.password_verify(password, db_account[0]['password']):
         errors.append("Invalid username and/or password.")
         return templates.TemplateResponse("login.html", {"request": request, "errors": errors})
-#    if not errors:
-#        response = RedirectResponse("/", status_code=303)
-#        jwt_token = auth_handler.token_encode(db_account[0]['uid'])
-#        response.set_cookie(key="access_token", value=f"{jwt_token}", httponly=True)
-#        return response
+    if not errors:
+        response = RedirectResponse("/", status_code=303)
+        jwt_token = auth_handler.token_encode(db_account[0]['uid'])
+        response.set_cookie(key="access_token", value=f"{jwt_token}", httponly=True)
+        return response

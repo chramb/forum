@@ -21,6 +21,6 @@ def web_register_post(request: Request, username: str = Form(), email: str = For
     errors = account_register(username, email, password)
     if not errors:
         success_msg = "account created successfully"
-        return templates.TemplateResponse("register.html", {"request": request, "errors": errors, "success": success_msg})
+        return templates.TemplateResponse("register.html", {"request": request, "success": success_msg})
     else:
         return templates.TemplateResponse("register.html", {"request": request, "errors": errors})

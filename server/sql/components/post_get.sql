@@ -6,7 +6,7 @@ select json_build_object(
         'username',a.username -- or subquery here?
         ),
     'edited', p.last_update is not null,
-    'comments', json_agg(comment_get_recursive_json_v1(c.id))
+    'comments', json_agg(comment_get(c.id))
            ) as post
 from post as p
     join account a on a.uid = p.creator_uid-- join here?
@@ -20,7 +20,7 @@ select
         'username', a.username
         ) as author,
     p.title,
-    json_agg(comment_get_recursive_json_v2(c.id))
+    json_agg(comment_get(c.id))
 from post p
          join account a on a.uid = p.creator_uid
          join comment c on p.id = c.post_id where response_for is null
