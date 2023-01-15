@@ -16,11 +16,10 @@ class Database:
             params = config()
             print("Connecting to the Database...")
             conn = psycopg2.connect(**params)
-            curr = conn.cursor()
-            print("Database Version: ", end="")
-            curr.execute("SELECT version()")
-            print(curr.fetchone()[0].split(',')[0])
-            curr.close()
+            with conn.cursor() as crsr:
+                print("Database Version: ", end="")
+                crsr.execute("SELECT version()")
+                print(crsr.fetchone()[0].split(',')[0])
         except psycopg2.OperationalError as err:
             print(err)
             sys.exit(1)

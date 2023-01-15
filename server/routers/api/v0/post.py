@@ -12,30 +12,34 @@ auth_handler = AuthHandler()
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/v0/account/token")
 
 
-@router.get("/api/v0/posts", tags=['TODO'])
-def posts_get(limit: Optional[int] = 20, sort_by: Optional[str] = "date"):
+@router.get("/api/v0/posts", tags=['Post'])
+def posts_get(limit: Optional[int] = 20):
     if not limit or limit > 50:
         limit = 20
-    if not sort_by or sort_by != "date" or sort_by != "popularity":
-        sort_by = "date"
 
     with connection.cursor(cursor_factory=RealDictCursor) as crsr:
         crsr.execute("""
             select
-                p.id,
-                a.username as author,
-                p.title,
-                json_agg(comment_get_recursive_json_v2(c.id))
+                p.id as post_id,
+                json_build_object(
+                    'uid', p.creator_uid,
+                    'username', a.username
+                    )as author,
+                p.title as post_title,
+                p.creation_date,
+                p.last_update is null as edited,
+                json_agg(comments_get(c.id)) as comments
             from post p
-            join account a on a.uid = p.creator_uid
-            join comment c on p.id = c.post_id where response_for is null
-            group by p.id, a.username, p.title, c.creation_date order by c.creation_date;
-        """)
+                     join account a on a.uid = p.creator_uid
+                     join comment c on p.id = c.post_id where response_for is null
+            group by p.id, a.username, p.title, c.creation_date, c.score order by c.creation_date, c.score
+            limit %s;
+        """, (limit,))
         posts = crsr.fetchall()
         return posts[0]
 
 
-@router.post("/api/v0/post/", status_code=201, tags=['TODO'])
+@router.post("/api/v0/post/", status_code=201, tags=['Post'])
 def post_create(post: PostCreate, jwt=Depends(oauth2_scheme)):
     account_uid = auth_handler.token_decode(jwt)
     with connection.cursor() as crsr:
@@ -59,16 +63,39 @@ def post_create(post: PostCreate, jwt=Depends(oauth2_scheme)):
     return {"details": "post successfully created"}  # TODO: return created post from db
 
 
-@router.get("/api/v0/post/", tags=['TODO'])
-def post_create(tag: str):
-    pass
+@router.get("/api/v0/post/{id}", tags=['Post'])
+def post_get(id: int):
+    with connection.cursor(cursor_factory=RealDictCursor) as crsr:
+        crsr.execute("""
+            select
+                p.id,
+                json_build_object(
+                        'uid', p.creator_uid,
+                        'username', a.username
+                    ) as author,
+                p.title,
+                p.creation_date,
+                p.last_update is null as edited,
+                json_agg(comments_get(c.id)) as comments
+            from post p
+                join account a on a.uid = p.creator_uid
+                join comment c on p.id = c.post_id 
+                where c.response_for is null 
+                    and p.id = %s
+            group by p.id, a.username, p.title, c.creation_date, c.score order by c.creation_date, c.score
+        """, (id,))
+        posts = crsr.fetchall()[0]
+    return posts
 
 
-@router.put("/api/v0/post/", tags=['TODO'])
-def post_create():
-    pass
+@router.put("/api/v0/post/{id}", tags=['TODO'])
+def post_update(id: int, post: PostCreate):
+    with connection.cursor(cursor_factory=RealDictCursor) as crsr:
+        crsr.execute("""
+        
+        """)
 
 
 @router.delete("/api/v0/post/", tags=['TODO'])
-def post_create():
+def post_delete():
     pass

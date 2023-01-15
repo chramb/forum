@@ -15,19 +15,18 @@ oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/v0/account/token")
 
 @router.get("/api/v0/account/@{username}", tags=['Account'])
 def account_get_by_username(username: str):
-    curr = connection.cursor(cursor_factory=RealDictCursor)
-    curr.execute("""
-    select a.username, a.email, a.uid,
-        a.time_created::date as date_registered,
-        array_agg(r.title) as roles
-    from account a
-    left join account_role ar on a.uid = ar.account_uid
-    left join role r on r.id = ar.role_id
-    where a.username = %s
-    group by a.username, a.email, a.uid, a.time_created::date
-    """, (username,))
-    # noinspection DuplicatedCode
-    result = curr.fetchall()
+    with connection.cursor(cursor_factory=RealDictCursor) as crsr:
+        crsr.execute("""
+            select a.username, a.email, a.uid,
+                a.time_created::date as date_registered,
+                array_agg(r.title) as roles
+            from account a
+            left join account_role ar on a.uid = ar.account_uid
+            left join role r on r.id = ar.role_id
+            where a.username = %s
+            group by a.username, a.email, a.uid, a.time_created::date
+            """, (username,))
+        result = crsr.fetchall()
 
     len_result = len(result)
     if len_result < 1:
@@ -47,19 +46,18 @@ def account_get_by_username(username: str):
 @router.get("/api/v0/account/{uid}", tags=['Account'])
 def account_get_by_uid(uid: str):
     # TODO: switch to with connection syntax
-    curr = connection.cursor(cursor_factory=RealDictCursor)
-    curr.execute("""
-    select a.username, a.email, a.uid,
-        a.time_created::date as date_registered,
-        array_agg(r.title) as roles
-    from account a
-    left join account_role ar on a.uid = ar.account_uid
-    left join role r on r.id = ar.role_id
-    where a.uid = %s
-    group by a.username, a.email, a.uid, a.time_created::date
-    """, (uid,))
-    # noinspection DuplicatedCode
-    result = curr.fetchall()
+    with connection.cursor(cursor_factory=RealDictCursor) as crsr:
+        crsr.execute("""
+            select a.username, a.email, a.uid,
+                a.time_created::date as date_registered,
+                array_agg(r.title) as roles
+            from account a
+            left join account_role ar on a.uid = ar.account_uid
+            left join role r on r.id = ar.role_id
+            where a.uid = %s
+            group by a.username, a.email, a.uid, a.time_created::date
+            """, (uid,))
+        result = crsr.fetchall()
 
     len_result = len(result)
     if len_result < 1:
@@ -100,20 +98,20 @@ def account_register(username: str, email: str, password: str):
         print(errors)
         return errors
 
-    with connection.cursor() as curr:
+    with connection.cursor() as crsr:
         # Get all users with the same username or email
         # TODO put both in a procedure (exec multiple from psycopg2 )
-        curr.execute("""
+        crsr.execute("""
             select a.username, a.email,a.password from account a
             where a.username = %s or a.email = %s;
         """, (username, email))  # TODO: improve query to just return bool
-        response = curr.fetchall()
+        response = crsr.fetchall()
         if len(response) > 0:
             errors.append("User this username and/or email already exists.")
             return errors
 
         # Create user
-        curr.execute("""
+        crsr.execute("""
             call account_register(
                 username := %s, 
                 password := %s, 

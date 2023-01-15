@@ -51,7 +51,7 @@ create table if not exists post -- phone
     creation_date timestamp default now(), -- brand int references brand(brand_id),
     last_update   timestamp default null,
     title         varchar(32) not null,
-    creator_uid   uuid references account (uid),
+    creator_uid   uuid references account (uid) on delete set null,
     tag_id        bigint references tag (id),
     unique (title, creator_uid)
     -- probably should replace with timestamp check (eg. < 5 Minutes: can't create post with same (title, creator_uid))
