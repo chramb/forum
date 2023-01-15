@@ -5,8 +5,6 @@ from util.config import config
 
 
 class Database:
-    # def __init__(self):
-
     def connect(self):
         """
         Connect to database

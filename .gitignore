@@ -7,7 +7,7 @@ pgdata*/
 
 # Possible config files
 .env
-config.ini
+config/config.ini
 
 # IDE
 .idea/

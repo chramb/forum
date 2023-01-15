@@ -7,15 +7,13 @@ from datetime import datetime, timedelta
 
 from util.config import config
 
+
 class AuthHandler:
-    options = config(filename="config.ini", section="auth")
+    options = config(filename="../config/config.ini", section="auth")
     security = HTTPBearer()
     pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
     secret = options['jwt_secret']
     jwt_algorithm = 'HS256'
-
-
-    # TODO: move those to config.ini
 
     def password_hash(self, password):
         return self.pwd_context.hash(password)
