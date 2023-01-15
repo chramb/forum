@@ -4,7 +4,7 @@ import uvicorn
 
 from fastapi import FastAPI
 
-from routers.api.v0 import account, post
+from routers.api.v0 import account, post, comment
 from routers.website import index, register, login
 
 app = FastAPI()
@@ -12,6 +12,7 @@ app = FastAPI()
 # API
 app.include_router(account.router)
 app.include_router(post.router)
+app.include_router(comment.router)
 # Website
 app.include_router(index.router)
 app.include_router(register.router)

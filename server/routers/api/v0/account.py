@@ -137,37 +137,36 @@ def account_oauth_login(form_data: OAuth2PasswordRequestForm = Depends()):
 
 
 @router.put("/api/v0/account/", tags=['Account'])
-def account_update(uid: str, account: AccountRegister, jwt=Depends(oauth2_scheme)):
+def account_update(account: AccountRegister, jwt=Depends(oauth2_scheme)):
     """
     Note: you can't create users with this request
     """
     # TODO: validate password, email, external function pulled from register ^^
     account_uid = auth_handler.token_decode(jwt)
-    if True:
-        with connection.cursor(cursor_factory=RealDictCursor) as crsr:
-            crsr.execute("""
-            select a.uid, a.username, a.email
-            from account a 
-            where a.username = %s or a.email = %s;
-            """, (account.username, account.email))
-            existing_accounts = crsr.fetchall()
-            if len(existing_accounts) > 0:
-                for acc in existing_accounts:
-                    if acc['uid'] != account_uid:
-                        return HTTPException(status_code=409, detail="username or password already taken")
+    with connection.cursor(cursor_factory=RealDictCursor) as crsr:
+        crsr.execute("""
+        select a.uid, a.username, a.email
+        from account a 
+        where a.username = %s or a.email = %s;
+        """, (account.username, account.email))
+        existing_accounts = crsr.fetchall()
+        if len(existing_accounts) > 0:
+            for acc in existing_accounts:
+                if acc['uid'] != account_uid:
+                    return HTTPException(status_code=409, detail="username or password already taken")
 
-            hashed_password = auth_handler.password_hash(account.password)
-            crsr.execute("""
-            update account
-                set 
-                 email = %s,
-                 username = %s,
-                 password = %s
-                where uid = %s;
-            """, (account.email, account.username, hashed_password, account_uid))
-            connection.commit()
+        hashed_password = auth_handler.password_hash(account.password)
+        crsr.execute("""
+        update account
+            set 
+             email = %s,
+             username = %s,
+             password = %s
+            where uid = %s;
+        """, (account.email, account.username, hashed_password, account_uid))
+        connection.commit()
 
-            return {"detail": "account updated successfully"}
+        return {"detail": "account updated successfully"}
 
     return HTTPException(status_code=401, detail="account uid doesn't mach authenticated user")
 

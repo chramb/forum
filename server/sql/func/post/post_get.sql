@@ -1,5 +1,3 @@
-select * from post;
-
 select json_build_object(
     'id', p.id,
     'title', p.title,
@@ -29,6 +27,7 @@ from post p
 group by p.id, a.username, p.title, c.creation_date, c.score order by c.creation_date, c.score;
 
 
+/*
 select
     p.id,
     json_build_object(

@@ -1,4 +1,4 @@
-create or replace function comments_get(id bigint)
+create or replace function comment_get(id bigint)
     returns json
     language plpgsql
 as $$ declare output json;
@@ -18,7 +18,7 @@ begin
                                              -- order by r.score
                                          ), '[]'))
     from comment c
-    where c.id = comments_get.id
+    where c.id = comment_get.id
     into output;
 
     return output;
@@ -58,4 +58,4 @@ select json_build_object(
                                          -- order by r.score
                                      ), '[]'))
 from comment c
-where c.id = 5;
+select comments_get(2);

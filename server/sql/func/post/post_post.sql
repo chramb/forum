@@ -12,8 +12,8 @@ begin
     return tag_id;
 end$$;
 
-create or replace procedure create_post(
-        user_uid uuid,
+create or replace procedure post_create(
+        author_uid uuid,
         title varchar(32),
         tag varchar(32),
         content varchar(1024)
@@ -22,29 +22,29 @@ create or replace procedure create_post(
 as $$begin
     -- check if null when creating
     -- (can't be null when creating but can after deleting user [deleted])
-    if user_uid is null then
+    if author_uid is null then
         raise NULL_VALUE_NOT_ALLOWED;
     end if;
     -- Create tag if doesn't exist
     insert into tag(name)
-    values (create_post.tag)
+    values (post_create.tag)
     on conflict do nothing;
     -- Create Post
     insert into post (title, creator_uid, tag_id)
-    values (title, user_uid, tag_get_id(create_post.tag));
+    values (title, author_uid, tag_get_id(post_create.tag));
     -- First Comment (Post content) -- remove on phone impl
     insert into "comment" (msg, post_id, creator_uid)
     values ("content",
             (select post.id
              from post
-             where post.title = create_post.title
-               and creator_uid = user_uid),
-            user_uid);
+             where post.title = post_create.title
+               and creator_uid = author_uid),
+            author_uid);
 end$$;
 
 select a.uid from account a where a.username = 'u1';
-call create_post(
-    user_uid := 'f280aa75-f1ca-46ee-96fb-409aa9e65670',
+call post_create(
+    author_uid := 'f280aa75-f1ca-46ee-96fb-409aa9e65670',
     title := 'Hello, World!',
     content := 'My first post on this forum, @u1',
     tag := 'test'
