@@ -47,3 +47,14 @@
     </div>
   </div>
 {% endblock %}
+
+{% block script %}
+      const login_form = document.getElementById('login-form')
+      login_form.addEventListener('submit', ev => {
+
+          if (!login_form.checkValidity()) {
+              ev.preventDefault()
+          }
+          login_form.classList.add('was-validated')
+      })
+{% endblock %}⏎
