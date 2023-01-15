@@ -3,7 +3,7 @@ __pycache__/
 venv/
 
 # Postgres
-pgdata/
+pgdata*/
 
 # Possible config files
 .env

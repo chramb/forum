@@ -16,5 +16,6 @@ podman run -d \\
         -v $PWD/pgdata:/var/lib/postgresql/data:rw,Z \\
     postgres:12-alpine
 """
+print(cmd)
 
 run(['sh', '-c', cmd])

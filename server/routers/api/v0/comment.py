@@ -27,18 +27,25 @@ def comment_get(comment_id: int):
 
 
 @router.post("/api/v0/post/{post_id}/comment", tags=['Comment'])
-def comment_post(post_id: int,comment: Comment, jwt=Depends(oauth2_scheme)):
+def comment_post(post_id: int, comment: Comment, jwt=Depends(oauth2_scheme)):
     account_id = auth_handler.token_decode(jwt)
     with connection.cursor() as crsr:
         crsr.execute("""
-        select * from account;
-            call comment_post(
-                creator_uid := %s,
-                post_id := %s,
-                msg := %s)
-        """, (account_id, post_id, comment.content))
-        connection.commit()
-        return {"detail": "comment successfully created."}
+            select count(*) > 0
+            from post p where p.id = %s;
+        """, (post_id,))
+        if crsr.fetchone()[0]:
+            crsr.execute("""
+            select * from account;
+                call comment_post(
+                    creator_uid := %s,
+                    post_id := %s,
+                    msg := %s)
+            """, (account_id, post_id, comment.content))
+            connection.commit()
+            return {"detail": "comment successfully created."}
+        else:
+            raise HTTPException(status_code=404, detail="post with given id not found")
 
 
 @router.post("/api/v0/post/{post_id}/comment/{comment_id}", tags=['Comment'])
@@ -46,15 +53,23 @@ def comment_post(post_id: int, comment_id: int, comment: Comment, jwt=Depends(oa
     account_id = auth_handler.token_decode(jwt)
     with connection.cursor() as crsr:
         crsr.execute("""
-        select * from account;
-            call comment_post(
-                creator_uid := %s,
-                post_id := %s,
-                msg := %s,
-                respond_to := %s)
-        """, (account_id, post_id, comment.content, comment_id))
-        connection.commit()
-        return {"detail": "comment successfully created."}
+            select count(*) > 0
+            from comment c where c.post_id = %s and c.id = %s;
+        """, (post_id, comment_id))
+        if crsr.fetchone()[0]:
+            with connection.cursor() as crsr:
+                crsr.execute("""
+                select * from account;
+                    call comment_post(
+                        creator_uid := %s,
+                        post_id := %s,
+                        msg := %s,
+                        respond_to := %s)
+                """, (account_id, post_id, comment.content, comment_id))
+                connection.commit()
+                return {"detail": "comment successfully created."}
+        else:
+            raise HTTPException(status_code=404, detail="post with given id or comment with given id not found")
 
 
 @router.put("/api/v0/comment/{comment_id}", tags=['Comment'])

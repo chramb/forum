@@ -28,11 +28,9 @@ def posts_get(limit: Optional[int] = 20):
                 p.title as post_title,
                 p.creation_date,
                 p.last_update is not null as edited,
-                json_agg(comments_get(c.id)) as comments -- TODO: make this not null when no comments
+                comments_get(p.id) as comments-- TODO: make this not null when no comments
             from post p
                      left join account a on a.uid = p.creator_uid
-                     left outer join comment c on p.id = c.post_id where response_for is null
-            group by p.id, a.username, p.title, c.creation_date, c.score order by c.creation_date, c.score
             limit %s;
         """, (limit,))
         posts = crsr.fetchall()
@@ -50,9 +48,9 @@ def post_create(post: Post, jwt=Depends(oauth2_scheme)):
         crsr.execute("""
             select count(*) > 0
             from post p
-            where p.creator_uid = %s and not p.title = %s;
+            where p.creator_uid = %s and p.title = %s;
         """, (account_uid, post.title))  # user can't make post with same title, spam or sth?
-        if crsr.fetchall()[0][0]:  # fetchall should return [[ True ]]
+        if not crsr.fetchall()[0][0]:  # fetchall should return [[ True ]]
 
             crsr.execute("""
                 call post_create(
@@ -75,21 +73,18 @@ def post_get(post_id: int):
     with connection.cursor(cursor_factory=RealDictCursor) as crsr:
         crsr.execute("""
             select
-                p.id,
+                p.id as post_id,
                 json_build_object(
                         'uid', p.creator_uid,
                         'username', a.username
                     ) as author,
-                p.title,
+                p.title as post_title,
                 p.creation_date,
                 p.last_update is not null as edited,
-                json_agg(comments_get(c.id)) as comments
+                comments_get(p.id) as comments
             from post p
                 join account a on a.uid = p.creator_uid
-                join comment c on p.id = c.post_id 
-                where c.response_for is null 
-                    and p.id = %s
-            group by p.id, a.username, p.title, c.creation_date, c.score order by c.creation_date, c.score
+            where p.id = %s;
         """, (post_id,))
         posts = crsr.fetchall()
     if not posts:

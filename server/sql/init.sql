@@ -8,6 +8,7 @@ create table if not exists role
     id    serial primary key,
     title varchar(32)
 );
+
 -- add needed roles
 insert into role (title) values ('user');
 insert into role (title) values ('admin');
@@ -184,8 +185,8 @@ end $$;
 
 --- comment
 
--- get comment in json
-create or replace function comment_get(id bigint)
+-- get single comment from comment_id and responses recursively
+create or replace function comment_get(comment_id bigint)
     returns json
     language plpgsql
 as $$ declare output json;
@@ -199,19 +200,50 @@ begin
                    'creation_time', c.creation_date, --date_trunc('seconds', c.creation_date),
                    'edited', c.last_update is not null,
                    'score', c.score,
-                   'responses', coalesce((select json_agg(comments_get(response.id))
+                   'responses', coalesce((select json_agg(comment_get(response.id))
                                           from comment as response
                                           where response.response_for = c.id
                                              -- order by r.score
                                          ), '[]'))
     from comment c
-    where c.id = comment_get.id
+    where c.id = comment_get.comment_id
     into output;
 
     return output;
 end $$;
 
+-- get all comments under post_id;
+select comments_get(3);
+select * from comment c join post p on p.id = c.post_id where post_id = 3;
+create or replace function comments_get(post_id bigint)
+    returns json
+    language plpgsql
+as $$ declare output json;
+begin
+    select json_agg(comment_get(c.id) order by c.id) from comment c
+    join post p on p.id = c.post_id and c.response_for is null
+    where c.post_id = comments_get.post_id
+    into output;
 
+    return output;
+end $$;
+--- comment post
+create or replace procedure comment_post(
+    creator_uid uuid,
+    post_id bigint,
+    msg varchar(1024),
+    respond_to bigint default null
+)
+    language plpgsql
+as $$begin
+    insert into comment (creator_uid, post_id, response_for, msg)
+    values (
+               comment_post.creator_uid,
+               comment_post.post_id,
+               comment_post.respond_to,
+               comment_post.msg
+           );
+end$$;
 --- tag
 
 -- get tag.id from name
